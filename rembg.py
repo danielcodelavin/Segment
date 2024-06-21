@@ -1,7 +1,7 @@
 from rembg import remove
 
 def remove_background(input: str, save_output: bool = True):
-    imgpath = ''
+    imgpath = input
     input_path = '/dataset/'+imgpath
     output_path = 'outputrmbg'+imgpath
 

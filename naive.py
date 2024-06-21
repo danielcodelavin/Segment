@@ -16,5 +16,29 @@ def obtainblack(image):
     return average # we get a three element tuple
 
         
-def randomsampler():
-        pass
+def sweeper(image,black):
+    width, height = image.size
+    maxblack = tuple(int(x * 1.02) for x in black)
+    minblack = tuple(int(x * 0.98) for x in black)
+    for x in range (0, width):
+        for y in range (0, height):
+            pixel = image.getpixel((x, y))
+            if pixel > minblack and pixel < maxblack:
+                # Check the 8 pixels around the current pixel
+                for dx in [-1, 0, 1]:
+                    for dy in [-1, 0, 1]:
+                        if dx == 0 and dy == 0:
+                            continue
+                        neighbor_x = x + dx
+                        neighbor_y = y + dy
+                        if 0 <= neighbor_x < width and 0 <= neighbor_y < height:
+                            neighbor_pixel = image.getpixel((neighbor_x, neighbor_y))
+                            if neighbor_pixel > minblack and neighbor_pixel < maxblack:
+                                # Start clustermode and call a new function
+                                clustereater(image, x, y, black)
+                                break
+
+def clustereater(image, x, y, black):
+        
+
+    
