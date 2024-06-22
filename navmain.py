@@ -13,4 +13,5 @@ black = Naive().obtainblack(image)
 #cleaned = remove_background(path,False)
 
 #naive
-naive = Naive().sweeper(cleaned,black)
+naive = Naive().sweeper(image,black)
+

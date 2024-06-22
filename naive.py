@@ -35,10 +35,29 @@ def sweeper(image,black):
                             neighbor_pixel = image.getpixel((neighbor_x, neighbor_y))
                             if neighbor_pixel > minblack and neighbor_pixel < maxblack:
                                 # Start clustermode and call a new function
-                                clustereater(image, x, y, black)
+                                image = clustereater(image, x, y, black)
                                 break
+    return image
 
 def clustereater(image, x, y, black):
+        maxblack = tuple(int(x * 1.02) for x in black)
+        minblack = tuple(int(x * 0.98) for x in black)
+        width, height = image.size
+        image.putpixel((x, y), (255, 255, 255, 0))
+        queue = [(x, y)]
+        while queue:
+            x, y = queue.pop(0)
+            for dx in [-1, 0, 1]:
+                for dy in [-1, 0, 1]:
+                    if dx == 0 and dy == 0:
+                        continue
+                    neighbor_x = x + dx
+                    neighbor_y = y + dy
+                    if 0 <= neighbor_x < width and 0 <= neighbor_y < height:
+                        neighbor_pixel = image.getpixel((neighbor_x, neighbor_y))
+                        if neighbor_pixel > minblack and neighbor_pixel < maxblack:
+                            image.putpixel((neighbor_x, neighbor_y), (255, 255, 255, 0))
+                            queue.append((neighbor_x, neighbor_y))
+        return image
         
 
-    
