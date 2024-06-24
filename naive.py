@@ -1,6 +1,6 @@
 import PIL
 from PIL import Image
-
+import torch
 
 
     #idea, brute force, take samples every two steps and check if they are background or black, get the definition of black from the corners
@@ -12,7 +12,7 @@ def obtainblack(image):
                 image.getpixel((0, height-1)),
                 image.getpixel((width-1, height-1)),
                 image.getpixel((width-1, 0))]
-    average = sum(corners, (0, 0, 0)) // 4
+    average = sum(corners, (0, 0, 0 ,0)) // 4.0
     return average # we get a three element tuple
 
         
@@ -20,6 +20,10 @@ def sweeper(image,black):
     width, height = image.size
     maxblack = tuple(int(x * 1.02) for x in black)
     minblack = tuple(int(x * 0.98) for x in black)
+    
+    
+    cluster_sizes = torch.tensor([])
+    
     for x in range (0, width):
         for y in range (0, height):
             pixel = image.getpixel((x, y))
@@ -35,11 +39,14 @@ def sweeper(image,black):
                             neighbor_pixel = image.getpixel((neighbor_x, neighbor_y))
                             if neighbor_pixel > minblack and neighbor_pixel < maxblack:
                                 # Start clustermode and call a new function
-                                image = clustereater(image, x, y, black)
+                                image, clusterlarge = clustereater(image, x, y, black)
+                                cluster_sizes = torch.cat((cluster_sizes, torch.tensor([clusterlarge])), 0)
                                 break
-    return image
+                                
+    return image, cluster_sizes
 
 def clustereater(image, x, y, black):
+        clustersize = 0
         maxblack = tuple(int(x * 1.02) for x in black)
         minblack = tuple(int(x * 0.98) for x in black)
         width, height = image.size
@@ -57,7 +64,19 @@ def clustereater(image, x, y, black):
                         neighbor_pixel = image.getpixel((neighbor_x, neighbor_y))
                         if neighbor_pixel > minblack and neighbor_pixel < maxblack:
                             image.putpixel((neighbor_x, neighbor_y), (255, 255, 255, 0))
+                            clustersize += 1
+                            image.show()
                             queue.append((neighbor_x, neighbor_y))
-        return image
+        return image , clustersize
         
 
+def countvalidpixels(image):
+        width, height = image.size
+        count = 0
+        for x in range(width):
+            for y in range(height):
+                r, g, b, a = image.getpixel((x, y))
+                if a != 0:
+                    count += 1
+        return count
+    
