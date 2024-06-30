@@ -1,6 +1,7 @@
 import PIL
 from PIL import Image
 import torch
+from display import display
 
 
     #idea, brute force, take samples every two steps and check if they are background or black, get the definition of black from the corners
@@ -51,6 +52,7 @@ def clustereater(image, x, y, black):
         minblack = tuple(int(x * 0.98) for x in black)
         width, height = image.size
         image.putpixel((x, y), (255, 255, 255, 0))
+        display(image)
         queue = [(x, y)]
         while queue:
             x, y = queue.pop(0)
@@ -64,8 +66,9 @@ def clustereater(image, x, y, black):
                         neighbor_pixel = image.getpixel((neighbor_x, neighbor_y))
                         if neighbor_pixel > minblack and neighbor_pixel < maxblack:
                             image.putpixel((neighbor_x, neighbor_y), (255, 255, 255, 0))
+                            display(image)
                             clustersize += 1
-                            image.show()
+
                             queue.append((neighbor_x, neighbor_y))
         return image , clustersize
         
@@ -79,4 +82,4 @@ def countvalidpixels(image):
                 if a != 0:
                     count += 1
         return count
-    
+
