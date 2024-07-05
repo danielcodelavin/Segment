@@ -14,13 +14,15 @@ def display(image):
         root.geometry("500x500")
         label = tkinter.Label(root)
         label.pack()
+        return root
 
     def update(image):
         global label
         img = ImageTk.PhotoImage(image)
         label.configure(image=img)
         label.image = img
-        root.update()    root.title("Image Viewer")
+        root.update()    
+        root.title("Image Viewer")
         root.geometry("500x500")
         label = tkinter.Label(root)
         label.pack()

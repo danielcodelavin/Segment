@@ -1,8 +1,8 @@
 import PIL
 from PIL import Image
 import torch
-import tkinter
-from tkinter import ImageTk
+#import tkinter
+#from tkinter import ImageTk
 
 
 def obtainblack(image):
@@ -48,7 +48,7 @@ def clustereater(image, x, y, black):
         minblack = tuple(int(x * 0.98) for x in black)
         width, height = image.size
         image.putpixel((x, y), (255, 255, 255, 0))
-        display.update(image)
+        #display.update(image)
         queue = [(x, y)]
         while queue:
             x, y = queue.pop(0)
@@ -63,7 +63,7 @@ def clustereater(image, x, y, black):
                         if neighbor_pixel > minblack and neighbor_pixel < maxblack:
                             image.putpixel((neighbor_x, neighbor_y), (255, 255, 255, 0))
                             clustersize += 1
-                            display.update(image)
+                            #display.update(image)
                             queue.append((neighbor_x, neighbor_y))
         return image , clustersize
         
@@ -75,26 +75,27 @@ def countvalidpixels(image):
             for y in range(height):
                 r, g, b, a = image.getpixel((x, y))
                 if a != 0:
+                    count += 1
         return count
 
 
 
-def display(image):
-    root = tkinter.Tk()
-    def startdisp():
-        root = tkinter.Tk()
-        root.title("Image Viewer")
-        root.geometry("500x500")
-        label = tkinter.Label(root)
-        label.pack()
-    def update(image):
-        global label
-        img = ImageTk.PhotoImage(image)
-        label.configure(image=img)
-        label.image = img
-        root.update()
+# def display(image):
+#     root = tkinter.Tk()
+#     def startdisp():
+#         root = tkinter.Tk()
+#         root.title("Image Viewer")
+#         root.geometry("500x500")
+#         label = tkinter.Label(root)
+#         label.pack()
+#     def update(image):
+#         global label
+#         img = ImageTk.PhotoImage(image)
+#         label.configure(image=img)
+#         label.image = img
+#         root.update()
 
-    root.title("Image Viewer")
-    root.geometry("500x500")
-    label = tkinter.Label(root)
-    label.pack()
+#     root.title("Image Viewer")
+#     root.geometry("500x500")
+#     label = tkinter.Label(root)
+#     label.pack()

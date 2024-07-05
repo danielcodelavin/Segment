@@ -1,12 +1,12 @@
 
 import PIL
-
+#import tkinter
 
 from naive import obtainblack, sweeper, clustereater, countvalidpixels
 import torch
-from display import display
+#from display import display
 
-path = 'dataset/tester.jpeg'
+path = 'dataset/onceler.jpeg'
 image = PIL.Image.open(path)
 image = image.convert("RGBA")
 normalimagesize = image.size
@@ -32,4 +32,4 @@ clusteramount = len(clustersizes)
 naiveimg.save("outputrmbg/tester1.png")
 
 
-display(image, normalimagesize, nobgimage, objectsize, objectsize_backup, naiveimg, clustersizes, clusteramount)
+#display(image, normalimagesize, nobgimage, objectsize, objectsize_backup, naiveimg, clustersizes, clusteramount)
