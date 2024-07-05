@@ -1,11 +1,9 @@
 import PIL
 from PIL import Image
 import torch
-from display import display
+import tkinter
+from tkinter import ImageTk
 
-
-    #idea, brute force, take samples every two steps and check if they are background or black, get the definition of black from the corners
-    # try to more or less compare to the black (a range) and if so, start a new function which clusters them together
 
 def obtainblack(image):
     width, height = image.size
@@ -16,12 +14,10 @@ def obtainblack(image):
     average = sum(corners, (0, 0, 0 ,0)) // 4.0
     return average # we get a three element tuple
 
-        
 def sweeper(image,black):
     width, height = image.size
     maxblack = tuple(int(x * 1.02) for x in black)
     minblack = tuple(int(x * 0.98) for x in black)
-    
     
     cluster_sizes = torch.tensor([])
     
@@ -52,7 +48,7 @@ def clustereater(image, x, y, black):
         minblack = tuple(int(x * 0.98) for x in black)
         width, height = image.size
         image.putpixel((x, y), (255, 255, 255, 0))
-        display(image)
+        display.update(image)
         queue = [(x, y)]
         while queue:
             x, y = queue.pop(0)
@@ -66,9 +62,8 @@ def clustereater(image, x, y, black):
                         neighbor_pixel = image.getpixel((neighbor_x, neighbor_y))
                         if neighbor_pixel > minblack and neighbor_pixel < maxblack:
                             image.putpixel((neighbor_x, neighbor_y), (255, 255, 255, 0))
-                            display(image)
                             clustersize += 1
-
+                            display.update(image)
                             queue.append((neighbor_x, neighbor_y))
         return image , clustersize
         
@@ -80,6 +75,26 @@ def countvalidpixels(image):
             for y in range(height):
                 r, g, b, a = image.getpixel((x, y))
                 if a != 0:
-                    count += 1
         return count
 
+
+
+def display(image):
+    root = tkinter.Tk()
+    def startdisp():
+        root = tkinter.Tk()
+        root.title("Image Viewer")
+        root.geometry("500x500")
+        label = tkinter.Label(root)
+        label.pack()
+    def update(image):
+        global label
+        img = ImageTk.PhotoImage(image)
+        label.configure(image=img)
+        label.image = img
+        root.update()
+
+    root.title("Image Viewer")
+    root.geometry("500x500")
+    label = tkinter.Label(root)
+    label.pack()
