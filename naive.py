@@ -11,13 +11,13 @@ def obtainblack(image):
                 image.getpixel((0, height-1)),
                 image.getpixel((width-1, height-1)),
                 image.getpixel((width-1, 0))]
-    average = sum(corners, (0, 0, 0 ,0)) // 4.0
+    average = tuple(sum(x) // 4 for x in zip(*corners))
     return average # we get a three element tuple
 
-def sweeper(image,black):
+def sweeper(image,black,tolerance):
     width, height = image.size
-    maxblack = tuple(int(x * 1.02) for x in black)
-    minblack = tuple(int(x * 0.98) for x in black)
+    maxblack = tuple(int(x * (1 + tolerance)) for x in black)
+    minblack = tuple(int(x * (1 - tolerance)) for x in black)
     
     cluster_sizes = torch.tensor([])
     
@@ -36,16 +36,16 @@ def sweeper(image,black):
                             neighbor_pixel = image.getpixel((neighbor_x, neighbor_y))
                             if neighbor_pixel > minblack and neighbor_pixel < maxblack:
                                 # Start clustermode and call a new function
-                                image, clusterlarge = clustereater(image, x, y, black)
+                                image, clusterlarge = clustereater(image, x, y, black, tolerance)
                                 cluster_sizes = torch.cat((cluster_sizes, torch.tensor([clusterlarge])), 0)
                                 break
                                 
     return image, cluster_sizes
 
-def clustereater(image, x, y, black):
-        clustersize = 0
-        maxblack = tuple(int(x * 1.02) for x in black)
-        minblack = tuple(int(x * 0.98) for x in black)
+def clustereater(image, x, y, black, tolerance):
+        clustersize: int = 0
+        maxblack = tuple(int(x * (1 + tolerance)) for x in black)
+        minblack = tuple(int(x * (1 - tolerance)) for x in black)
         width, height = image.size
         image.putpixel((x, y), (255, 255, 255, 0))
         #display.update(image)
@@ -70,7 +70,7 @@ def clustereater(image, x, y, black):
 
 def countvalidpixels(image):
         width, height = image.size
-        count = 0
+        count : int = 0
         for x in range(width):
             for y in range(height):
                 r, g, b, a = image.getpixel((x, y))
