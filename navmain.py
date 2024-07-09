@@ -7,10 +7,10 @@ import torch
 #from display import display
 
 path = 'dataset/onceler.jpeg'
-outputpath = 'outputrmbg/tester05.png'
+outputpath = 'outputrmbg/testermini50.png'
 image = PIL.Image.open(path)
 image = image.convert("RGBA")
-
+minimumcluster = 50
 black = obtainblack(image)
 tolerance = 0.5
 
@@ -22,7 +22,7 @@ objectsize = countvalidpixels(nobgimage)
 
 objectsize_backup = normalimagesize - backg
 
-naiveimg, clustersizes = sweeper(nobgimage, black, tolerance)
+naiveimg, clustersizes = sweeper(nobgimage, black, tolerance, minimumcluster)
 clustersizes = [int(x) for x in clustersizes]
 average_cluster_size = sum(clustersizes) / len(clustersizes)
 clustersum = sum(clustersizes)
@@ -37,7 +37,7 @@ density = objectwithoutcluster / objectsize_backup
 clusteramount = len(clustersizes)
 
 naiveimg.save(outputpath)
-with open("outputrmbg/reporttester05.txt", "w") as f:
+with open("outputrmbg/reporttestermini50.txt", "w") as f:
     f.write("Copper Report: \n\n")
     f.write("All numbers here are expressed in terms of pixel count. If provided with an image scale and image size,\n one can easily convert these values to meaningful units. \n")
     f.write("Clusters are the holes within the object itself. \n\n")
