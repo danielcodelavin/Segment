@@ -32,8 +32,13 @@ density = objectwithoutcluster / objectsize_backup
 
 #etwa 40% farbtoleranz gut, check nochmal mit 0.3-0.5 in 0.02 schritten
 # 0.3 seems a little more  lenient and kills fewer false clusters. maybe try to implement dynamic tolerance next
+#0.5 better, 0.3 leaves artifacts
 
-
+#######################################
+#                 Todo                #
+# add a "remnanteater" that kills the little specks of pixels around the image that are not part of the object
+# this carries no mathematical purpose, but to produce a cleaner image
+#######################################
 clusteramount = len(clustersizes)
 
 naiveimg.save(outputpath)
