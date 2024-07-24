@@ -1,0 +1,16 @@
+Copper Report: 
+
+All numbers here are expressed in terms of pixel count. If provided with an image scale and image size,
+ one can easily convert these values to meaningful units. 
+Clusters are the holes within the object itself. 
+
+Normal Image Size: 409431
+Background Pixels (without the holes in the object itself): 137945
+Object Size: 265287
+Object Size Backup: 271486
+Cluster Amount: 28
+Cluster Sizes: [1588, 820, 53, 363, 43, 55, 42, 983, 780, 166, 137, 52, 239, 117, 66, 1449, 278, 1474, 308, 152, 71, 1292, 51, 70, 222, 30, 127, 80]
+Cluster Sum: 11108
+Average Cluster Size: 396.7142857142857
+Object without Cluster: 254179
+Density: 0.9362508563977516% 

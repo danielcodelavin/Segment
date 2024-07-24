@@ -97,6 +97,47 @@ def countvalidpixels(image):
                 count += 1
     return count
 
+def debrissweeper(image, min_cluster_size):
+    width, height = image.size
+    visited = set()
+    
+    for x in range(width):
+        for y in range(height):
+            if (x, y) not in visited:
+                r, g, b, a = image.getpixel((x, y))
+                if a != 0:  # Non-deleted pixel
+                    cluster, size = check_cluster_size(image, x, y, visited)
+                    if size < min_cluster_size:
+                        # Remove the cluster if it's too small
+                        for cx, cy in cluster:
+                            image.putpixel((cx, cy), (255, 255, 255, 0))
+    
+    return image
+
+def check_cluster_size(image, start_x, start_y, visited):
+    width, height = image.size
+    queue = [(start_x, start_y)]
+    cluster = set()
+    cluster.add((start_x, start_y))
+    visited.add((start_x, start_y))
+    
+    while queue:
+        x, y = queue.pop(0)
+        for dx in [-1, 0, 1]:
+            for dy in [-1, 0, 1]:
+                if dx == 0 and dy == 0:
+                    continue
+                neighbor_x = x + dx
+                neighbor_y = y + dy
+                if 0 <= neighbor_x < width and 0 <= neighbor_y < height and (neighbor_x, neighbor_y) not in visited:
+                    r, g, b, a = image.getpixel((neighbor_x, neighbor_y))
+                    if a != 0:  # Non-deleted pixel
+                        queue.append((neighbor_x, neighbor_y))
+                        cluster.add((neighbor_x, neighbor_y))
+                        visited.add((neighbor_x, neighbor_y))
+    
+    return cluster, len(cluster)
+
 
 
 # def display(image):

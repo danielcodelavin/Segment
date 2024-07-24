@@ -2,17 +2,19 @@
 import PIL
 #import tkinter
 
-from naive import obtainblack, sweeper, clustereater, countvalidpixels
+from naive import obtainblack, sweeper, clustereater, countvalidpixels, debrissweeper
 import torch
 #from display import display
 
 path = 'dataset/onceler.jpeg'
-outputpath = 'outputrmbg/testermini50.png'
+outputpath = 'outputrmbg/testermini50deb.png'
 image = PIL.Image.open(path)
 image = image.convert("RGBA")
-minimumcluster = 50
+minimumcluster = 30
 black = obtainblack(image)
 tolerance = 0.5
+
+maxdebrissize = 50
 
 normalimagesize = countvalidpixels(image)
 
@@ -30,6 +32,7 @@ objectwithoutcluster = objectsize - clustersum
 
 density = objectwithoutcluster / objectsize_backup
 
+debrisimage = debrissweeper(naiveimg, maxdebrissize)
 #etwa 40% farbtoleranz gut, check nochmal mit 0.3-0.5 in 0.02 schritten
 # 0.3 seems a little more  lenient and kills fewer false clusters. maybe try to implement dynamic tolerance next
 #0.5 better, 0.3 leaves artifacts
@@ -41,8 +44,8 @@ density = objectwithoutcluster / objectsize_backup
 #######################################
 clusteramount = len(clustersizes)
 
-naiveimg.save(outputpath)
-with open("outputrmbg/reporttestermini50.txt", "w") as f:
+debrisimage.save(outputpath)
+with open("outputrmbg/reporttestermini50deb.txt", "w") as f:
     f.write("Copper Report: \n\n")
     f.write("All numbers here are expressed in terms of pixel count. If provided with an image scale and image size,\n one can easily convert these values to meaningful units. \n")
     f.write("Clusters are the holes within the object itself. \n\n")
