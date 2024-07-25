@@ -82,7 +82,7 @@ def run_function():
 # Create the main window
 root = tk.Tk()
 root.title("Naive Main GUI")
-root.geometry("1000x900")
+root.geometry("1200x900")
 
 # Create and set up variables with default values
 input_path = tk.StringVar(value='dataset/default.jpg')
@@ -117,7 +117,7 @@ tk.Entry(root, textvariable=max_debris_size, width=10).grid(row=5, column=1, sti
 tk.Button(root, text="Run Function", command=run_function).grid(row=6, column=1, pady=10)
 
 # Create a Text widget for static text
-static_text = tk.Text(root, height=15, width=60, wrap=tk.WORD)
+static_text = tk.Text(root, height=50, width=150, wrap=tk.WORD)
 static_text.grid(row=7, column=0, columnspan=3, padx=5, pady=5)
 static_text.insert(tk.END, """
 # Naive Image Processing Tool
@@ -127,27 +127,25 @@ This tool removes image backgrounds and identifies clusters.
 ## Parameters:
 
 1. **Black Tolerance** (default: 0.5, range: 0.0-1.0):
-   - Defines background color range. Higher = more variation allowed.
-
+   - Defines how lenient we are when removing background - Higher : More removed.
 2. **Minimum Cluster Size** (default: 30):
-   - Smallest cluster to keep. Increase to remove more small details.
+   - A cluster of background pixel has to be this size to be removed - Higher : Keep more smaller clusters
 
 3. **Max Debris Size** (default: 50):
-   - Largest debris to remove after processing.
+   - Leftover Clusters of frontground pixels have to be smaller than this to be removed - Higher : Keep fewer small clusters
 
 ## Process:
 
 1. Identifies background color
 2. Removes background
-3. Processes clusters
+3. Processes clusters - removes clusters
 4. Removes small debris
 5. Saves image and report
 
 ## Tips:
 
 - Start with defaults, then adjust.
-- Increase Black Tolerance if too much object is removed.
-- Decrease it if too much background remains.
+- Increase Black Tolerance if too much background remains.
 - Adjust Minimum Cluster Size for detail vs. noise balance.
 - Use Max Debris Size for final clean-up.
 
