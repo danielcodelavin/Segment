@@ -1,6 +1,33 @@
 from PIL import Image
 import torch
 
+def complexblack(image):
+    width, height = image.size
+    border_distance = 2
+
+    # Check top and bottom borders
+    for x in range(border_distance, width - border_distance):
+        top_pixel = image.getpixel((x, border_distance))
+        if top_pixel[3] != 0:  # Check alpha value
+            return top_pixel , [x, border_distance]
+        
+        bottom_pixel = image.getpixel((x, height - border_distance - 1))
+        if bottom_pixel[3] != 0:
+            return bottom_pixel , [x, height - border_distance - 1]
+
+    # Check left and right borders
+    for y in range(border_distance, height - border_distance):
+        left_pixel = image.getpixel((border_distance, y))
+        if left_pixel[3] != 0:
+            return left_pixel , [border_distance, y]
+        
+        right_pixel = image.getpixel((width - border_distance - 1, y))
+        if right_pixel[3] != 0:
+            return right_pixel , [width - border_distance - 1, y]
+
+    # If no pixel with non-zero alpha is found
+    return False
+
 def obtainblack(image):
     width, height = image.size
     corners = [image.getpixel((2, 2)), 

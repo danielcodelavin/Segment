@@ -2,8 +2,10 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import PIL
 from PIL import Image
-
+import torch
 def naivemain(inputpath='dataset/default.jpg', 
+              
+
               outputpath='outputrmbg/output.png', 
               scriptpath='outputrmbg/report.txt', 
               blacktolerance=0.5, 
@@ -51,6 +53,54 @@ def naivemain(inputpath='dataset/default.jpg',
         f.write(f"Object without Cluster: {objectwithoutcluster}\n")
         f.write(f"Density: {density:.2%}\n")
 
+def compmain(inputpath='dataset/default.jpg', outputpath='outputrmbg/output.png', 
+              scriptpath='outputrmbg/report.txt', 
+              blacktolerance=0.5, 
+              minimumclustersize=30, 
+              maxdebrissize=50):
+    from naive import obtainblack, sweeper, clustereater, countvalidpixels, debrissweeper, complexblack
+    image = Image.open(inputpath)
+    image = image.convert("RGBA")
+    normalimagesize = countvalidpixels(image)
+    backgroundsize = 0
+    #removedpixels = 0
+    all_cluster_sizes = torch.empty(0,0)
+    
+    while complexblack(image) != False:
+        black , pixel = complexblack(image)
+        image , local = clustereater(image, pixel[0], pixel[1], black, blacktolerance)
+        backgroundsize += local
+        image, clustersizes = sweeper(image, black, blacktolerance, minimumclustersize)
+        all_cluster_sizes = torch.cat((all_cluster_sizes, clustersizes))
+
+    objectsize = countvalidpixels(image)
+    clustersizes = [int(x) for x in clustersizes]
+    average_cluster_size = sum(clustersizes) / len(clustersizes) if clustersizes else 0
+    clustersum = sum(clustersizes)
+    objectwithoutcluster = objectsize - clustersum
+
+    density = objectsize/(objectsize + clustersum)
+
+    debrisimage = debrissweeper(image, maxdebrissize)
+
+    clusteramount = len(clustersizes)
+
+    debrisimage.save(outputpath)
+    with open(scriptpath, "w") as f:
+        f.write("Copper Report: \n\n")
+        f.write("All numbers here are expressed in terms of pixel count. If provided with an image scale and image size,\n one can easily convert these values to meaningful units. \n")
+        f.write("Clusters are the holes within the object itself. \n\n")
+        f.write(f"Normal Image Size: {normalimagesize}\n")
+        f.write(f"Background Pixels (without the holes in the object itself): {backg}\n")
+        f.write(f"Object Size: {objectsize}\n")
+        f.write(f"Object Size Backup: {objectsize_backup}\n")
+        f.write(f"Cluster Amount: {clusteramount}\n")
+        f.write(f"Cluster Sizes: {clustersizes}\n")
+        f.write(f"Cluster Sum: {clustersum}\n")
+        f.write(f"Average Cluster Size: {average_cluster_size}\n")
+        f.write(f"Object without Cluster: {objectwithoutcluster}\n")
+        f.write(f"Density: {density:.2%}\n")
+
 def browse_input():
     input_path.set(filedialog.askopenfilename())
 
@@ -58,9 +108,11 @@ def browse_output():
     output_path.set(filedialog.askdirectory())
 
 def browse_script():
-    script_path.set(filedialog.asksaveasfilename(defaultextension=".txt"))
+    script_path.set(file ,dialog.asksaveasfilename(defaultextension=".txt"))
 
 def run_function():
+
+
     try:
         input_file = input_path.get()
         output_dir = output_path.get()
@@ -78,6 +130,27 @@ def run_function():
         messagebox.showerror("Error", str(e))
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred: {str(e)}")
+
+
+def run_comp_function():
+    try:
+        input_file = input_path.get()
+        output_dir = output_path.get()
+        script_file = script_path.get()
+        black_tol = float(black_tolerance.get())
+        min_cluster = int(min_cluster_size.get())
+        max_debris = int(max_debris_size.get())
+        
+        if not input_file or not output_dir or not script_file:
+            raise ValueError("Input, output, and script paths are required.")
+        
+        compmain(input_file, output_dir, script_file, black_tol, min_cluster, max_debris)
+        messagebox.showinfo("Success", "Function executed successfully!")
+    except ValueError as e:
+        messagebox.showerror("Error", str(e))
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred: {str(e)}")
+
 
 # Create the main window
 root = tk.Tk()
@@ -114,7 +187,9 @@ tk.Entry(root, textvariable=min_cluster_size, width=10).grid(row=4, column=1, st
 tk.Label(root, text="Max Debris Size:").grid(row=5, column=0, sticky="e", padx=5, pady=5)
 tk.Entry(root, textvariable=max_debris_size, width=10).grid(row=5, column=1, sticky="w", padx=5, pady=5)
 
-tk.Button(root, text="Run Function", command=run_function).grid(row=6, column=1, pady=10)
+tk.Button(root, text="Run Naive Function", command=run_function).grid(row=6, column=1, pady=10)
+
+tk.Button(root, text="Run Complex Function", command=run_comp_function).grid(row=6, column=1, pady=10)
 
 # Create a Text widget for static text
 static_text = tk.Text(root, height=50, width=150, wrap=tk.WORD)
