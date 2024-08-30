@@ -57,7 +57,7 @@ def sweeper(image, black, tolerance,minimumcluster):
                     image, cluster_size = clustereater(image, x, y, black, tolerance)
                     cluster_sizes.append(cluster_size)
                                 
-    return image, torch.tensor(cluster_sizes)
+    return image, cluster_sizes
 
 def miniclusterchecker(image, start_x, start_y, black, tolerance, min_size):
     maxblack = tuple(int(x * (1 + tolerance)) for x in black)

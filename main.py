@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import PIL
 from PIL import Image
-import torch
+
 def naivemain(inputpath='dataset/default.jpg', 
               
 
@@ -64,14 +64,14 @@ def compmain(inputpath='dataset/default.jpg', outputpath='outputrmbg/output.png'
     normalimagesize = countvalidpixels(image)
     backgroundsize = 0
     #removedpixels = 0
-    all_cluster_sizes = torch.empty(0,0)
+    all_cluster_sizes = []
     
     while complexblack(image) != False:
         black , pixel = complexblack(image)
         image , local = clustereater(image, pixel[0], pixel[1], black, blacktolerance)
         backgroundsize += local
         image, clustersizes = sweeper(image, black, blacktolerance, minimumclustersize)
-        all_cluster_sizes = torch.cat((all_cluster_sizes, clustersizes))
+        all_cluster_sizes.append(clustersizes)
 
     objectsize = countvalidpixels(image)
     clustersizes = [int(x) for x in clustersizes]
@@ -91,9 +91,9 @@ def compmain(inputpath='dataset/default.jpg', outputpath='outputrmbg/output.png'
         f.write("All numbers here are expressed in terms of pixel count. If provided with an image scale and image size,\n one can easily convert these values to meaningful units. \n")
         f.write("Clusters are the holes within the object itself. \n\n")
         f.write(f"Normal Image Size: {normalimagesize}\n")
-        f.write(f"Background Pixels (without the holes in the object itself): {backg}\n")
+        f.write(f"Background Pixels (without the holes in the object itself): {backgroundsize}\n")
         f.write(f"Object Size: {objectsize}\n")
-        f.write(f"Object Size Backup: {objectsize_backup}\n")
+        f.write(f"Object Size Backup: {objectsize}\n")
         f.write(f"Cluster Amount: {clusteramount}\n")
         f.write(f"Cluster Sizes: {clustersizes}\n")
         f.write(f"Cluster Sum: {clustersum}\n")
@@ -165,7 +165,6 @@ black_tolerance = tk.StringVar(value="0.5")
 min_cluster_size = tk.StringVar(value="30")
 max_debris_size = tk.StringVar(value="50")
 
-# Create and place widgets
 tk.Label(root, text="Input Path:").grid(row=0, column=0, sticky="e", padx=5, pady=5)
 tk.Entry(root, textvariable=input_path, width=50).grid(row=0, column=1, padx=5, pady=5)
 tk.Button(root, text="Browse", command=browse_input).grid(row=0, column=2, padx=5, pady=5)
@@ -187,9 +186,9 @@ tk.Entry(root, textvariable=min_cluster_size, width=10).grid(row=4, column=1, st
 tk.Label(root, text="Max Debris Size:").grid(row=5, column=0, sticky="e", padx=5, pady=5)
 tk.Entry(root, textvariable=max_debris_size, width=10).grid(row=5, column=1, sticky="w", padx=5, pady=5)
 
-tk.Button(root, text="Run Naive Function", command=run_function).grid(row=6, column=1, pady=10)
-
-tk.Button(root, text="Run Complex Function", command=run_comp_function).grid(row=6, column=1, pady=10)
+# Place the buttons next to each other
+tk.Button(root, text="Run Naive Function", command=run_function).grid(row=6, column=1, pady=10, sticky="e", padx=(0, 10))
+tk.Button(root, text="Run Complex Function", command=run_comp_function).grid(row=6, column=2, pady=10, sticky="w", padx=(10, 0))
 
 # Create a Text widget for static text
 static_text = tk.Text(root, height=50, width=150, wrap=tk.WORD)
