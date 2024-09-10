@@ -101,6 +101,42 @@ def compmain(inputpath='dataset/default.jpg', outputpath='outputrmbg/output.png'
         f.write(f"Object without Cluster: {objectwithoutcluster}\n")
         f.write(f"Density: {density:.2%}\n")
 
+def ai_main(inputpath, outputpath, 
+              scriptpath, 
+              blacktolerance=0.5, 
+              minimumclustersize=30, 
+              maxdebrissize=50):
+    from naive import obtainblack, sweeper, clustereater, countvalidpixels, debrissweeper, complexblack, collect_border_pixels
+    from removebg import remove_background
+
+    rawimage = Image.open(inputpath)
+    rawimage = rawimage.convert("RGBA")
+    normalimagesize = countvalidpixels(rawimage)
+    no_bg_image = remove_background(inputpath,False)
+    borderpixels = collect_border_pixels(rawimage)
+    cleaned_image = no_bg_image
+    clusters = []
+    for pixel in borderpixels:
+        cleaned_image, tempclusters = sweeper(cleaned_image, pixel, blacktolerance, minimumclustersize)
+        clusters.extend(tempclusters)
+    density = countvalidpixels(cleaned_image) / countvalidpixels(no_bg_image)
+    clusters = [int(x) for x in clusters]
+    clustersum = sum(clusters)
+    avg_cluster_size = sum(clusters) / len(clusters) if clusters else 0
+    clusteramount = len(clusters)
+    cleaned_image.save(outputpath)
+    with open(scriptpath, "w") as f:
+        f.write("Report: \n\n")
+        f.write("All numbers here are expressed in terms of pixel count. If provided with an image scale and image size,\n one can easily convert these values to meaningful units. \n")
+        f.write("Clusters are the holes within the object itself. \n\n")
+        f.write(f"Normal Image Size: {normalimagesize}\n")
+        f.write(f"Cluster Amount: {clusteramount}\n")
+        f.write(f"Cluster Sizes: {clusters}\n")
+        f.write(f"Cluster Sum: {clustersum}\n")
+        f.write(f"Average Cluster Size: {avg_cluster_size}\n")
+        f.write(f"Density: {density:.2%}\n")
+
+
 def browse_input():
     input_path.set(filedialog.askopenfilename())
 
@@ -151,16 +187,30 @@ def run_comp_function():
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
-
+def run_ai_main():
+  
+        input_file = input_path.get()
+        output_dir = output_path.get()
+        script_file = script_path.get()
+        black_tol = float(black_tolerance.get())
+        min_cluster = int(min_cluster_size.get())
+        max_debris = int(max_debris_size.get())
+        
+        if not input_file or not output_dir or not script_file:
+            raise ValueError("Input, output, and script paths are required.")
+        
+        ai_main(input_file, output_dir, script_file, black_tol, min_cluster, max_debris)
+        messagebox.showinfo("Success", "Function executed successfully!")
+   
 # Create the main window
 root = tk.Tk()
 root.title("Naive Main GUI")
 root.geometry("1200x900")
 
 # Create and set up variables with default values
-input_path = tk.StringVar(value='dataset/default.jpg')
-output_path = tk.StringVar(value='outputrmbg/output.png')
-script_path = tk.StringVar(value='outputrmbg/report.txt')
+input_path = tk.StringVar(value='dataset/onceler.jpeg')
+output_path = tk.StringVar(value='outputrmbg/aaoutput.png')
+script_path = tk.StringVar(value='outputrmbg/aareport.txt')
 black_tolerance = tk.StringVar(value="0.5")
 min_cluster_size = tk.StringVar(value="30")
 max_debris_size = tk.StringVar(value="50")
@@ -189,6 +239,8 @@ tk.Entry(root, textvariable=max_debris_size, width=10).grid(row=5, column=1, sti
 # Place the buttons next to each other
 tk.Button(root, text="Run Naive Function", command=run_function).grid(row=6, column=1, pady=10, sticky="e", padx=(0, 10))
 tk.Button(root, text="Run Complex Function", command=run_comp_function).grid(row=6, column=2, pady=10, sticky="w", padx=(10, 0))
+tk.Button(root, text="AI-Function", command=run_ai_main).grid(row=6, column=3, pady=10, sticky="w", padx=(10, 0))
+
 
 # Create a Text widget for static text
 static_text = tk.Text(root, height=50, width=150, wrap=tk.WORD)
