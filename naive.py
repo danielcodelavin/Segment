@@ -28,30 +28,36 @@ def complexblack(image):
     # If no pixel with non-zero alpha is found
     return False
 
-def collect_border_pixels(image):
+def collect_border_pixels(image, top=True, bottom=True, left=True, right=True):
     width, height = image.size
     border_distance = 2
     pixel_values = []
 
     # Check top and bottom borders
-    for x in range(border_distance, width - border_distance):
-        top_pixel = image.getpixel((x, border_distance))
-        if top_pixel[3] != 0:  # Check alpha value
-            pixel_values.append(top_pixel)
-        
-        bottom_pixel = image.getpixel((x, height - border_distance - 1))
-        if bottom_pixel[3] != 0:
-            pixel_values.append(bottom_pixel)
+    if top or bottom:
+        for x in range(border_distance, width - border_distance):
+            if top:
+                top_pixel = image.getpixel((x, border_distance))
+                if top_pixel[3] != 0:  # Check alpha value
+                    pixel_values.append(top_pixel)
+            
+            if bottom:
+                bottom_pixel = image.getpixel((x, height - border_distance - 1))
+                if bottom_pixel[3] != 0:
+                    pixel_values.append(bottom_pixel)
 
     # Check left and right borders
-    for y in range(border_distance, height - border_distance):
-        left_pixel = image.getpixel((border_distance, y))
-        if left_pixel[3] != 0:
-            pixel_values.append(left_pixel)
-        
-        right_pixel = image.getpixel((width - border_distance - 1, y))
-        if right_pixel[3] != 0:
-            pixel_values.append(right_pixel)
+    if left or right:
+        for y in range(border_distance, height - border_distance):
+            if left:
+                left_pixel = image.getpixel((border_distance, y))
+                if left_pixel[3] != 0:
+                    pixel_values.append(left_pixel)
+            
+            if right:
+                right_pixel = image.getpixel((width - border_distance - 1, y))
+                if right_pixel[3] != 0:
+                    pixel_values.append(right_pixel)
 
     # Remove duplicates by converting to a set and back to a list
     unique_pixel_values = list(set(pixel_values))
@@ -68,6 +74,11 @@ def obtainblack(image):
 
 def pixel_within_tolerance(pixel, minblack, maxblack):
     return all(minblack[i] <= pixel[i] <= maxblack[i] for i in range(3))
+def pixel_transparent_checker(pixel):
+    if isinstance(pixel, tuple) and len(pixel) == 4:
+        return pixel[3] == 0
+    else:
+        return False
 
 def sweeper(image, black, tolerance, minimumcluster):
     width, height = image.size
@@ -110,14 +121,15 @@ def miniclusterchecker(image, start_x, start_y, black, tolerance, min_size):
                 neighbor_y = y + dy
                 if 0 <= neighbor_x < width and 0 <= neighbor_y < height and (neighbor_x, neighbor_y) not in visited:
                     neighbor_pixel = image.getpixel((neighbor_x, neighbor_y))
+                    if pixel_transparent_checker(neighbor_pixel):
+                        return False
                     if pixel_within_tolerance(neighbor_pixel, minblack, maxblack):
+                    
                         queue.append((neighbor_x, neighbor_y))
                         visited.add((neighbor_x, neighbor_y))
-                    elif neighbor_pixel[3] == 0:
-                        borders_alpha_zero = True
 
     # Check if the cluster borders any alpha == 0 pixels
-    return cluster_size >= min_size and not borders_alpha_zero
+    return cluster_size >= min_size 
 
 def clustereater(image, x, y, black, tolerance):
     clustersize = 1  # Initialize with 1 to count the starting pixel
@@ -157,6 +169,9 @@ def countvalidpixels(image):
                 count += 1
     return count
 
+
+
+#ONLY FOR DERBIS -  DERELICT
 def debrissweeper(image, min_cluster_size):
     width, height = image.size
     visited = set()
@@ -173,7 +188,7 @@ def debrissweeper(image, min_cluster_size):
                             image.putpixel((cx, cy), (255, 255, 255, 0))
     
     return image
-
+#ONLY FOR DERBIS -  DERELICT
 def check_cluster_size(image, start_x, start_y, visited):
     width, height = image.size
     queue = [(start_x, start_y)]

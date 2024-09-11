@@ -105,7 +105,7 @@ def ai_main(inputpath, outputpath,
               scriptpath, 
               blacktolerance=0.5, 
               minimumclustersize=30, 
-              maxdebrissize=50):
+              maxdebrissize=50, top = False, bottom = False, left = False, right= False):
     from naive import obtainblack, sweeper, clustereater, countvalidpixels, debrissweeper, complexblack, collect_border_pixels
     from removebg import remove_background
 
@@ -113,7 +113,8 @@ def ai_main(inputpath, outputpath,
     rawimage = rawimage.convert("RGBA")
     normalimagesize = countvalidpixels(rawimage)
     no_bg_image = remove_background(inputpath,False)
-    borderpixels = collect_border_pixels(rawimage)
+    no_bg_image.save('outputrmbg/NO_BG_ONLY_output.png')
+    borderpixels = collect_border_pixels(rawimage, top, bottom, left, right)
     cleaned_image = no_bg_image
     clusters = []
     for pixel in borderpixels:
@@ -125,6 +126,7 @@ def ai_main(inputpath, outputpath,
     avg_cluster_size = sum(clusters) / len(clusters) if clusters else 0
     clusteramount = len(clusters)
     cleaned_image.save(outputpath)
+   
     with open(scriptpath, "w") as f:
         f.write("Report: \n\n")
         f.write("All numbers here are expressed in terms of pixel count. If provided with an image scale and image size,\n one can easily convert these values to meaningful units. \n")
@@ -195,13 +197,19 @@ def run_ai_main():
         black_tol = float(black_tolerance.get())
         min_cluster = int(min_cluster_size.get())
         max_debris = int(max_debris_size.get())
+        top_val = top_var.get()
+        bottom_val = bottom_var.get()
+        left_val = left_var.get()
+        right_val = right_var.get()
         
         if not input_file or not output_dir or not script_file:
             raise ValueError("Input, output, and script paths are required.")
         
-        ai_main(input_file, output_dir, script_file, black_tol, min_cluster, max_debris)
+        ai_main(input_file, output_dir, script_file, black_tol, min_cluster, max_debris, top_val, bottom_val, left_val, right_val)
         messagebox.showinfo("Success", "Function executed successfully!")
    
+
+
 # Create the main window
 root = tk.Tk()
 root.title("Naive Main GUI")
@@ -214,6 +222,13 @@ script_path = tk.StringVar(value='outputrmbg/aareport.txt')
 black_tolerance = tk.StringVar(value="0.5")
 min_cluster_size = tk.StringVar(value="30")
 max_debris_size = tk.StringVar(value="50")
+
+# Create variables for checkboxes
+top_var = tk.BooleanVar(value=True)
+bottom_var = tk.BooleanVar(value=True)
+left_var = tk.BooleanVar(value=True)
+right_var = tk.BooleanVar(value=True)
+
 
 tk.Label(root, text="Input Path:").grid(row=0, column=0, sticky="e", padx=5, pady=5)
 tk.Entry(root, textvariable=input_path, width=50).grid(row=0, column=1, padx=5, pady=5)
@@ -236,22 +251,21 @@ tk.Entry(root, textvariable=min_cluster_size, width=10).grid(row=4, column=1, st
 tk.Label(root, text="Max Debris Size:").grid(row=5, column=0, sticky="e", padx=5, pady=5)
 tk.Entry(root, textvariable=max_debris_size, width=10).grid(row=5, column=1, sticky="w", padx=5, pady=5)
 
-# Place the buttons next to each other
-tk.Button(root, text="Run Naive Function", command=run_function).grid(row=6, column=1, pady=10, sticky="e", padx=(0, 10))
-tk.Button(root, text="Run Complex Function", command=run_comp_function).grid(row=6, column=2, pady=10, sticky="w", padx=(10, 0))
-tk.Button(root, text="AI-Function", command=run_ai_main).grid(row=6, column=3, pady=10, sticky="w", padx=(10, 0))
+# Add checkboxes
+tk.Checkbutton(root, text="Top", variable=top_var).grid(row=3, column=2, sticky="w", padx=5, pady=5)
+tk.Checkbutton(root, text="Bottom", variable=bottom_var).grid(row=4, column=2, sticky="w", padx=5, pady=5)
+tk.Checkbutton(root, text="Left", variable=left_var).grid(row=5, column=2, sticky="w", padx=5, pady=5)
+tk.Checkbutton(root, text="Right", variable=right_var).grid(row=6, column=2, sticky="w", padx=5, pady=5)
 
+# Place the buttons next to each other
+tk.Button(root, text="Run Naive Function", command=run_function).grid(row=7, column=1, pady=10, sticky="e", padx=(0, 10))
+tk.Button(root, text="Run Complex Function", command=run_comp_function).grid(row=7, column=2, pady=10, sticky="w", padx=(10, 0))
+tk.Button(root, text="AI-Function", command=run_ai_main).grid(row=7, column=3, pady=10, sticky="w", padx=(10, 0))
 
 # Create a Text widget for static text
 static_text = tk.Text(root, height=50, width=150, wrap=tk.WORD)
-static_text.grid(row=7, column=0, columnspan=3, padx=5, pady=5)
+static_text.grid(row=8, column=0, columnspan=3, padx=5, pady=5)
 static_text.insert(tk.END, """
-# Naive Image Processing Tool
-
-This tool removes image backgrounds and identifies clusters.
-
-## Parameters:
-
 1. **Black Tolerance** (default: 0.5, range: 0.0-1.0):
    - Defines how lenient we are when removing background - Higher : More removed.
 2. **Minimum Cluster Size** (default: 30):
