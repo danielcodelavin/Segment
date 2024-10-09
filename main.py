@@ -1,57 +1,82 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import PIL
+from naive import obtainblack, sweeper, clustereater, countvalidpixels, debrissweeper, complexblack, collect_border_pixels, find_border_clusters, process_image, new_sweeper
+from removebg import remove_background
 from PIL import Image
 
-def naivemain(inputpath='dataset/default.jpg', 
-              
+def process_image(inputpath, outputpath, black_tolerance, minimum_cluster_size, top, bottom, left, right):
+    rawimage = Image.open(inputpath)
+    rawimage = rawimage.convert("RGBA")
+    normalimagesize = countvalidpixels(rawimage)
+    
+    no_bg_image = remove_background(inputpath, False)
+    no_bg_image.save('outputrmbg/NO_BG_ONLY_output.png')
+    
+    borderpixels = collect_border_pixels(rawimage, top, bottom, left, right)
+    
+    # Find border clusters
+    forbidden_pixels = find_border_clusters(no_bg_image)
+    
+    cleaned_image = no_bg_image
+    clusters = []
+    
+    for pixel in borderpixels:
+        cleaned_image, tempclusters = new_sweeper(cleaned_image, pixel, black_tolerance, minimum_cluster_size, forbidden_pixels)
+        clusters.extend(tempclusters)
+    
+    density = countvalidpixels(cleaned_image) / countvalidpixels(no_bg_image)
+    clusters = [int(x) for x in clusters]
+    clustersum = sum(clusters)
+    avg_cluster_size = sum(clusters) / len(clusters) if clusters else 0
+    clusteramount = len(clusters)
+    
+    cleaned_image.save(outputpath)
+    
+    return {
+        'density': density,
+        'clustersum': clustersum,
+        'avg_cluster_size': avg_cluster_size,
+        'clusteramount': clusteramount
+    }
 
-              outputpath='outputrmbg/output.png', 
-              scriptpath='outputrmbg/report.txt', 
+
+def naivemain(inputpath, outputpath, 
+              scriptpath, 
               blacktolerance=0.5, 
               minimumclustersize=30, 
-              maxdebrissize=50):
-    from naive import obtainblack, sweeper, clustereater, countvalidpixels, debrissweeper
+              maxdebrissize=50, top = False, bottom = False, left = False, right= False):
 
-    image = Image.open(inputpath)
-    image = image.convert("RGBA")
 
-    black = obtainblack(image)
-    normalimagesize = countvalidpixels(image)
-
-    nobgimage, backg = clustereater(image, 3, 3, black, blacktolerance)
-
-    objectsize = countvalidpixels(nobgimage)
-    objectsize_backup = normalimagesize - backg
-
-    naiveimg, clustersizes = sweeper(nobgimage, black, blacktolerance, minimumclustersize)
-    clustersizes = [int(x) for x in clustersizes]
-    average_cluster_size = sum(clustersizes) / len(clustersizes) if clustersizes else 0
-    clustersum = sum(clustersizes)
-    objectwithoutcluster = objectsize - clustersum
-
-    density = objectwithoutcluster / objectsize_backup if objectsize_backup != 0 else 0
-
-    debrisimage = debrissweeper(naiveimg, maxdebrissize)
-
-    clusteramount = len(clustersizes)
-
-    debrisimage.save(outputpath)
-
+    rawimage = Image.open(inputpath)
+    rawimage = rawimage.convert("RGBA")
+    normalimagesize = countvalidpixels(rawimage)
+    no_bg_image = remove_background(inputpath,False)
+    no_bg_image.save('outputrmbg/NO_BG_ONLY_output.png')
+    borderpixels = collect_border_pixels(rawimage, top, bottom, left, right)
+    cleaned_image = no_bg_image
+    clusters = []
+    for pixel in borderpixels:
+        cleaned_image, tempclusters = sweeper(cleaned_image, pixel, blacktolerance, minimumclustersize)
+        clusters.extend(tempclusters)
+    density = countvalidpixels(cleaned_image) / countvalidpixels(no_bg_image)
+    clusters = [int(x) for x in clusters]
+    clustersum = sum(clusters)
+    avg_cluster_size = sum(clusters) / len(clusters) if clusters else 0
+    clusteramount = len(clusters)
+    cleaned_image.save(outputpath)
+   
     with open(scriptpath, "w") as f:
-        f.write("Copper Report: \n\n")
+        f.write("Report: \n\n")
         f.write("All numbers here are expressed in terms of pixel count. If provided with an image scale and image size,\n one can easily convert these values to meaningful units. \n")
         f.write("Clusters are the holes within the object itself. \n\n")
         f.write(f"Normal Image Size: {normalimagesize}\n")
-        f.write(f"Background Pixels (without the holes in the object itself): {backg}\n")
-        f.write(f"Object Size: {objectsize}\n")
-        f.write(f"Object Size Backup: {objectsize_backup}\n")
         f.write(f"Cluster Amount: {clusteramount}\n")
-        f.write(f"Cluster Sizes: {clustersizes}\n")
+        f.write(f"Cluster Sizes: {clusters}\n")
         f.write(f"Cluster Sum: {clustersum}\n")
-        f.write(f"Average Cluster Size: {average_cluster_size}\n")
-        f.write(f"Object without Cluster: {objectwithoutcluster}\n")
+        f.write(f"Average Cluster Size: {avg_cluster_size}\n")
         f.write(f"Density: {density:.2%}\n")
+
 
 def compmain(inputpath='dataset/default.jpg', outputpath='outputrmbg/output.png', 
               scriptpath='outputrmbg/report.txt', 
@@ -151,24 +176,24 @@ def browse_script():
 def run_function():
 
 
-    try:
+
         input_file = input_path.get()
         output_dir = output_path.get()
         script_file = script_path.get()
         black_tol = float(black_tolerance.get())
         min_cluster = int(min_cluster_size.get())
         max_debris = int(max_debris_size.get())
+        top_val = top_var.get()
+        bottom_val = bottom_var.get()
+        left_val = left_var.get()
+        right_val = right_var.get()
         
         if not input_file or not output_dir or not script_file:
             raise ValueError("Input, output, and script paths are required.")
         
-        naivemain(input_file, output_dir, script_file, black_tol, min_cluster, max_debris)
+        naivemain(input_file, output_dir, script_file, black_tol, min_cluster, max_debris, top_val, bottom_val, left_val, right_val)
         messagebox.showinfo("Success", "Function executed successfully!")
-    except ValueError as e:
-        messagebox.showerror("Error", str(e))
-    except Exception as e:
-        messagebox.showerror("Error", f"An error occurred: {str(e)}")
-
+   
 
 def run_comp_function():
     try:
