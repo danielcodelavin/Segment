@@ -1,6 +1,19 @@
 from PIL import Image
 import numpy as np
 
+
+def is_black(pixel, tolerance):
+    """
+    Check if a pixel is considered "black" based on the given tolerance.
+    
+    :param pixel: Tuple of (R, G, B, A) values
+    :param tolerance: Integer value for black tolerance
+    :return: Boolean indicating if the pixel is considered black
+    """
+    r, g, b, a = pixel
+    return r <= tolerance and g <= tolerance and b <= tolerance and a > 0
+
+
 def find_border_clusters(image):
     """
     Find clusters that border pixels with alpha=0 and return all pixels of these clusters.
@@ -52,7 +65,7 @@ def new_sweeper(image, start_pixel, black_tolerance, minimum_cluster_size, forbi
     :param start_pixel: Starting pixel for flood fill
     :param black_tolerance: Tolerance for considering a pixel as "black"
     :param minimum_cluster_size: Minimum size for a valid cluster
-    :param forbidden_pixels: List of pixel coordinates that should not be removed
+    :param forbidden_pixels: Set of pixel coordinates that should not be removed
     :return: Tuple of (cleaned image, list of cluster sizes)
     """
     width, height = image.size
@@ -60,7 +73,6 @@ def new_sweeper(image, start_pixel, black_tolerance, minimum_cluster_size, forbi
     visited = set()
     cluster = set()
     stack = [start_pixel]
-    forbidden_set = set(forbidden_pixels)
 
     while stack:
         x, y = stack.pop()
@@ -73,53 +85,15 @@ def new_sweeper(image, start_pixel, black_tolerance, minimum_cluster_size, forbi
                     if 0 <= nx < width and 0 <= ny < height:
                         stack.append((nx, ny))
 
-    if len(cluster) >= minimum_cluster_size and not cluster.intersection(forbidden_set):
+    if len(cluster) >= minimum_cluster_size and not cluster.intersection(forbidden_pixels):
         for x, y in cluster:
             pixels[x, y] = (0, 0, 0, 0)  # Make pixel transparent
         return image, [len(cluster)]
     else:
         return image, []
+    
 
-# Assuming you have these helper functions:
-# is_black(pixel, tolerance)
-# countvalidpixels(image)
-# remove_background(inputpath, save_mask)
-# collect_border_pixels(image, top, bottom, left, right)
 
-def process_image(inputpath, outputpath, black_tolerance, minimum_cluster_size, top, bottom, left, right):
-    rawimage = Image.open(inputpath)
-    rawimage = rawimage.convert("RGBA")
-    normalimagesize = countvalidpixels(rawimage)
-    
-    no_bg_image = remove_background(inputpath, False)
-    no_bg_image.save('outputrmbg/NO_BG_ONLY_output.png')
-    
-    borderpixels = collect_border_pixels(rawimage, top, bottom, left, right)
-    
-    # Find border clusters
-    forbidden_pixels = find_border_clusters(no_bg_image)
-    
-    cleaned_image = no_bg_image
-    clusters = []
-    
-    for pixel in borderpixels:
-        cleaned_image, tempclusters = new_sweeper(cleaned_image, pixel, black_tolerance, minimum_cluster_size, forbidden_pixels)
-        clusters.extend(tempclusters)
-    
-    density = countvalidpixels(cleaned_image) / countvalidpixels(no_bg_image)
-    clusters = [int(x) for x in clusters]
-    clustersum = sum(clusters)
-    avg_cluster_size = sum(clusters) / len(clusters) if clusters else 0
-    clusteramount = len(clusters)
-    
-    cleaned_image.save(outputpath)
-    
-    return {
-        'density': density,
-        'clustersum': clustersum,
-        'avg_cluster_size': avg_cluster_size,
-        'clusteramount': clusteramount
-    }
 
 # Usage
 

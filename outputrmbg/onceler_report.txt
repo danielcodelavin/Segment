@@ -1,0 +1,9 @@
+Porosity Analysis Report
+=======================
+
+Analysis Results:
+- Total Object Pixels: 307283
+- Total Hole Pixels: 0
+- Number of Holes: 0
+- Material Density: 100.00%
+
