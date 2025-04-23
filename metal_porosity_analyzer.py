@@ -30,12 +30,12 @@ class PorosityAnalyzer:
         self.output_dir = tk.StringVar(value='output')
         self.output_file = tk.StringVar(value='processed_image.png')
         self.report_file = tk.StringVar(value='report.txt')
-        self.black_tolerance = tk.DoubleVar(value=0.5)
-        self.min_cluster_size = tk.IntVar(value=30)
-        self.edge_width = tk.IntVar(value=40)  # Default edge width of 40 pixels
+        self.black_tolerance = tk.DoubleVar(value=0.6)
+        self.min_cluster_size = tk.IntVar(value=25)
+        self.edge_width = tk.IntVar(value=35)  # Default edge width of 40 pixels
         
         # Number of edge samples to use for black detection
-        self.edge_samples = tk.IntVar(value=100)
+        self.edge_samples = tk.IntVar(value=120)
         
         # State variables
         self.current_image = None
@@ -173,7 +173,7 @@ class PorosityAnalyzer:
         explanation_frame.grid(row=1, column=0, sticky="ew", pady=10)
         
         explanation_text = """
-Scientific Porosity Analysis Workflow:
+Porosity Analysis Workflow:
 
 1. Remove background with rembg
 2. Create a protected edge zone to avoid processing edge artifacts
@@ -181,16 +181,15 @@ Scientific Porosity Analysis Workflow:
    - Sampling a grid of pixels near the edges
    - Identifying which ones were removed by rembg (true background)
    - Computing the average color of these known background pixels
-4. Identify and remove holes in the interior region only
-5. Generate comprehensive porosity report
+4. Identify and remove holes in the interior region only - if within tolerance of computed bg-color
+5. Generate porosity report
 
 Parameters:
 - Black Tolerance: Defines how lenient we are when detecting holes (higher = more removed)
-- Minimum Cluster Size: Clusters smaller than this won't be considered holes
+- Minimum Cluster Size: Clusters smaller than this won't be considered holes - wont be removed
 - Edge Width: Width of the border zone that will be protected from hole detection (pixels)
 - Edge Samples: Number of edge points to sample for black detection (higher = more accurate)
 
-This approach preserves edges while scientifically identifying and measuring porosity in interior regions.
 """
         ttk.Label(explanation_frame, text=explanation_text, justify="left", wraplength=600).grid(row=0, column=0, sticky="ew")
         
