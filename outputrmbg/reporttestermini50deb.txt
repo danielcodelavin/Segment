@@ -4,13 +4,13 @@ All numbers here are expressed in terms of pixel count. If provided with an imag
  one can easily convert these values to meaningful units. 
 Clusters are the holes within the object itself. 
 
-Normal Image Size: 409431
-Background Pixels (without the holes in the object itself): 137945
-Object Size: 265287
-Object Size Backup: 271486
-Cluster Amount: 27
-Cluster Sizes: [1588, 820, 53, 363, 43, 55, 983, 780, 166, 137, 52, 239, 117, 66, 1449, 278, 1474, 308, 152, 71, 1292, 51, 70, 222, 30, 127, 80]
-Cluster Sum: 11066
-Average Cluster Size: 409.85185185185185
-Object without Cluster: 254221
-Density: 0.9364055605077242% 
+Normal Image Size: 307283
+Background Pixels (without the holes in the object itself): 1
+Object Size: 307283
+Object Size Backup: 307282
+Cluster Amount: 28
+Cluster Sizes: [19437, 1588, 823, 53, 361, 43, 55, 983, 780, 166, 137, 52, 239, 117, 66, 1449, 278, 1474, 309, 152, 71, 1292, 51, 70, 222, 30, 127, 80]
+Cluster Sum: 30505
+Average Cluster Size: 1089.4642857142858
+Object without Cluster: 276778
+Density: 0.9007296229522068% 

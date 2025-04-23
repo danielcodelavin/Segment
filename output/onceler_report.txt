@@ -1,0 +1,16 @@
+Porosity Analysis Report
+=======================
+
+Analysis Results:
+- Total Object Pixels: 307283
+- Total Hole Pixels: 119
+- Number of Holes: 2
+- Material Density: 99.96%
+
+Hole Size Distribution:
+- Minimum: 53 pixels
+- Maximum: 66 pixels
+- Average: 59.5 pixels
+
+Detailed Hole Sizes:
+[66, 53]

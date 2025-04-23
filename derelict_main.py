@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import PIL
-from naive import obtainblack, sweeper, clustereater, countvalidpixels, debrissweeper, complexblack, collect_border_pixels, find_border_clusters, process_image, new_sweeper, is_black
+from naive import obtainblack, sweeper, clustereater, countvalidpixels, debrissweeper, complexblack, collect_border_pixels, find_border_clusters, new_sweeper, is_black
 from removebg import remove_background
 from PIL import Image
 
@@ -102,42 +102,6 @@ def compmain(inputpath='dataset/default.jpg', outputpath='outputrmbg/output.png'
         f.write(f"Object without Cluster: {objectwithoutcluster}\n")
         f.write(f"Density: {density:.2%}\n")
 
-def ai_main(inputpath, outputpath, 
-              scriptpath, 
-              blacktolerance=0.5, 
-              minimumclustersize=30, 
-              maxdebrissize=50, top = False, bottom = False, left = False, right= False):
-    from naive import obtainblack, sweeper, clustereater, countvalidpixels, debrissweeper, complexblack, collect_border_pixels
-    from removebg import remove_background
-
-    rawimage = Image.open(inputpath)
-    rawimage = rawimage.convert("RGBA")
-    normalimagesize = countvalidpixels(rawimage)
-    no_bg_image = remove_background(inputpath,False)
-    no_bg_image.save('outputrmbg/NO_BG_ONLY_output.png')
-    borderpixels = collect_border_pixels(rawimage, top, bottom, left, right)
-    cleaned_image = no_bg_image
-    clusters = []
-    for pixel in borderpixels:
-        cleaned_image, tempclusters = sweeper(cleaned_image, pixel, blacktolerance, minimumclustersize)
-        clusters.extend(tempclusters)
-    density = countvalidpixels(cleaned_image) / countvalidpixels(no_bg_image)
-    clusters = [int(x) for x in clusters]
-    clustersum = sum(clusters)
-    avg_cluster_size = sum(clusters) / len(clusters) if clusters else 0
-    clusteramount = len(clusters)
-    cleaned_image.save(outputpath)
-   
-    with open(scriptpath, "w") as f:
-        f.write("Report: \n\n")
-        f.write("All numbers here are expressed in terms of pixel count. If provided with an image scale and image size,\n one can easily convert these values to meaningful units. \n")
-        f.write("Clusters are the holes within the object itself. \n\n")
-        f.write(f"Normal Image Size: {normalimagesize}\n")
-        f.write(f"Cluster Amount: {clusteramount}\n")
-        f.write(f"Cluster Sizes: {clusters}\n")
-        f.write(f"Cluster Sum: {clustersum}\n")
-        f.write(f"Average Cluster Size: {avg_cluster_size}\n")
-        f.write(f"Density: {density:.2%}\n")
 
 
 def browse_input():
@@ -147,7 +111,7 @@ def browse_output():
     output_path.set(filedialog.askdirectory())
 
 def browse_script():
-    script_path.set(file ,dialog.asksaveasfilename(defaultextension=".txt"))
+    script_path.set(filedialog.asksaveasfilename(defaultextension=".txt"))
 
 def run_function():
 
@@ -190,25 +154,7 @@ def run_comp_function():
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
-def run_ai_main():
-  
-        input_file = input_path.get()
-        output_dir = output_path.get()
-        script_file = script_path.get()
-        black_tol = float(black_tolerance.get())
-        min_cluster = int(min_cluster_size.get())
-        max_debris = int(max_debris_size.get())
-        top_val = top_var.get()
-        bottom_val = bottom_var.get()
-        left_val = left_var.get()
-        right_val = right_var.get()
-        
-        if not input_file or not output_dir or not script_file:
-            raise ValueError("Input, output, and script paths are required.")
-        
-        ai_main(input_file, output_dir, script_file, black_tol, min_cluster, max_debris, top_val, bottom_val, left_val, right_val)
-        messagebox.showinfo("Success", "Function executed successfully!")
-   
+
 
 
 # Create the main window
@@ -261,7 +207,7 @@ tk.Checkbutton(root, text="Right", variable=right_var).grid(row=6, column=2, sti
 # Place the buttons next to each other
 tk.Button(root, text="Run Naive Function", command=run_function).grid(row=7, column=1, pady=10, sticky="e", padx=(0, 10))
 tk.Button(root, text="Run Complex Function", command=run_comp_function).grid(row=7, column=2, pady=10, sticky="w", padx=(10, 0))
-tk.Button(root, text="AI-Function", command=run_ai_main).grid(row=7, column=3, pady=10, sticky="w", padx=(10, 0))
+
 
 # Create a Text widget for static text
 static_text = tk.Text(root, height=50, width=150, wrap=tk.WORD)

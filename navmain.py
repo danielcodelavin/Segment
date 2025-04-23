@@ -1,9 +1,11 @@
 
 import PIL
 #import tkinter
-
+from PIL import Image
 from naive import obtainblack, sweeper, clustereater, countvalidpixels, debrissweeper
 import torch
+from rembg import remove
+import io
 #from display import display
 
 path = 'dataset/onceler.jpeg'
@@ -15,6 +17,14 @@ black = obtainblack(image)
 tolerance = 0.5
 
 maxdebrissize = 50
+##### remove background with rembg before passing onto the clustereater
+with open(path, 'rb') as i:
+    input = i.read()
+    output = remove(input)
+    pil_image = Image.open(io.BytesIO(output))
+    image = pil_image.convert("RGBA")
+
+##### apply gaussian blur to the image before passing onto the clustereater
 
 normalimagesize = countvalidpixels(image)
 
@@ -32,7 +42,10 @@ objectwithoutcluster = objectsize - clustersum
 
 density = objectwithoutcluster / objectsize_backup
 
-debrisimage = debrissweeper(naiveimg, maxdebrissize)
+###remove the debris stuff
+
+
+#debrisimage = debrissweeper(naiveimg, maxdebrissize)
 #etwa 40% farbtoleranz gut, check nochmal mit 0.3-0.5 in 0.02 schritten
 # 0.3 seems a little more  lenient and kills fewer false clusters. maybe try to implement dynamic tolerance next
 #0.5 better, 0.3 leaves artifacts
@@ -44,7 +57,7 @@ debrisimage = debrissweeper(naiveimg, maxdebrissize)
 #######################################
 clusteramount = len(clustersizes)
 
-debrisimage.save(outputpath)
+#debrisimage.save(outputpath)
 with open("outputrmbg/reporttestermini50deb.txt", "w") as f:
     f.write("Copper Report: \n\n")
     f.write("All numbers here are expressed in terms of pixel count. If provided with an image scale and image size,\n one can easily convert these values to meaningful units. \n")
