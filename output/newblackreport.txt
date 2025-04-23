@@ -1,0 +1,15 @@
+Metal Porosity Analysis Report
+=======================
+
+All numbers here are expressed in terms of pixel count. If provided with an image scale and image size,
+one can easily convert these values to meaningful units.
+Clusters are the holes within the object itself.
+
+Normal Image Size: 409431
+Object Size (after bg removal): 307283
+Final Object Size (after hole removal): 296341
+Cluster Amount: 29
+Cluster Sizes: [41, 30, 58, 126, 794, 76, 1464, 1271, 109, 161, 1425, 228, 108, 128, 1487, 210, 761, 54, 268, 967, 55, 145, 42, 302, 114, 50, 73, 351, 44]
+Cluster Sum: 10942
+Average Cluster Size: 377.31
+Density: 96.44%

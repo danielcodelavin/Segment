@@ -30,15 +30,12 @@ class PorosityAnalyzer:
         self.output_dir = tk.StringVar(value='output')
         self.output_file = tk.StringVar(value='processed_image.png')
         self.report_file = tk.StringVar(value='report.txt')
-        self.black_tolerance = tk.DoubleVar(value=0.6)
-        self.min_cluster_size = tk.IntVar(value=25)
-        self.edge_width = tk.IntVar(value=35)  # Default edge width of 40 pixels
+        self.black_tolerance = tk.DoubleVar(value=0.5)
+        self.min_cluster_size = tk.IntVar(value=30)
+        self.edge_width = tk.IntVar(value=40)  # Default edge width of 40 pixels
         
-        # Border variables
-        self.top_var = tk.BooleanVar(value=True)
-        self.bottom_var = tk.BooleanVar(value=True)
-        self.left_var = tk.BooleanVar(value=True)
-        self.right_var = tk.BooleanVar(value=True)
+        # Number of edge samples to use for black detection
+        self.edge_samples = tk.IntVar(value=100)
         
         # State variables
         self.current_image = None
@@ -130,23 +127,26 @@ class PorosityAnalyzer:
                             orient="horizontal", command=lambda v: self.edge_width_label.config(text=f"{int(float(v))}"))
         edge_scale.grid(row=0, column=0, sticky="ew")
         
-        # Border checkboxes
-        border_frame = ttk.LabelFrame(param_frame, text="Border Selection", padding="10")
-        border_frame.grid(row=6, column=0, sticky="ew", pady=(10,0))
+        # Edge sample count
+        ttk.Label(param_frame, text="Edge Samples:").grid(row=6, column=0, sticky="w", pady=(10,0))
+        sample_frame = ttk.Frame(param_frame)
+        sample_frame.grid(row=7, column=0, sticky="ew")
         
-        ttk.Checkbutton(border_frame, text="Top", variable=self.top_var).grid(row=0, column=0, sticky="w")
-        ttk.Checkbutton(border_frame, text="Bottom", variable=self.bottom_var).grid(row=0, column=1, sticky="w")
-        ttk.Checkbutton(border_frame, text="Left", variable=self.left_var).grid(row=1, column=0, sticky="w")
-        ttk.Checkbutton(border_frame, text="Right", variable=self.right_var).grid(row=1, column=1, sticky="w")
+        self.sample_label = tk.Label(sample_frame, text=self.edge_samples.get())
+        self.sample_label.grid(row=0, column=1, padx=5)
+        
+        sample_scale = ttk.Scale(sample_frame, from_=50, to=500, variable=self.edge_samples,
+                            orient="horizontal", command=lambda v: self.sample_label.config(text=f"{int(float(v))}"))
+        sample_scale.grid(row=0, column=0, sticky="ew")
         
         # Show overlay checkbox
         ttk.Checkbutton(param_frame, text="Show Hole Detection Overlay", 
                        variable=self.show_overlay,
-                       command=self.toggle_overlay).grid(row=7, column=0, sticky="w", pady=5)
+                       command=self.toggle_overlay).grid(row=8, column=0, sticky="w", pady=5)
         
         # Process buttons
         button_frame = ttk.Frame(param_frame)
-        button_frame.grid(row=8, column=0, sticky="ew", pady=10)
+        button_frame.grid(row=9, column=0, sticky="ew", pady=10)
         
         ttk.Button(button_frame, text="Process Image", 
                   command=self.process_image_ui).grid(row=0, column=0, padx=5, sticky="ew")
@@ -173,11 +173,14 @@ class PorosityAnalyzer:
         explanation_frame.grid(row=1, column=0, sticky="ew", pady=10)
         
         explanation_text = """
-Improved Porosity Analysis Workflow:
+Scientific Porosity Analysis Workflow:
 
 1. Remove background with rembg
 2. Create a protected edge zone to avoid processing edge artifacts
-3. Obtain reference "black" color for hole detection
+3. Scientifically determine the reference "black" color by:
+   - Sampling a grid of pixels near the edges
+   - Identifying which ones were removed by rembg (true background)
+   - Computing the average color of these known background pixels
 4. Identify and remove holes in the interior region only
 5. Generate comprehensive porosity report
 
@@ -185,9 +188,9 @@ Parameters:
 - Black Tolerance: Defines how lenient we are when detecting holes (higher = more removed)
 - Minimum Cluster Size: Clusters smaller than this won't be considered holes
 - Edge Width: Width of the border zone that will be protected from hole detection (pixels)
-- Border Selection: Choose which borders to analyze for initial color reference
+- Edge Samples: Number of edge points to sample for black detection (higher = more accurate)
 
-This approach preserves edges while accurately identifying and measuring porosity in interior regions.
+This approach preserves edges while scientifically identifying and measuring porosity in interior regions.
 """
         ttk.Label(explanation_frame, text=explanation_text, justify="left", wraplength=600).grid(row=0, column=0, sticky="ew")
         
@@ -302,10 +305,7 @@ This approach preserves edges while accurately identifying and measuring porosit
                 input_path, 
                 self.black_tolerance.get(),
                 self.min_cluster_size.get(),
-                self.top_var.get(),
-                self.bottom_var.get(),
-                self.left_var.get(),
-                self.right_var.get()
+                self.edge_samples.get()
             )
             
             # Save results
@@ -324,8 +324,8 @@ This approach preserves edges while accurately identifying and measuring porosit
             traceback.print_exc()
             messagebox.showerror("Error", f"Processing failed: {str(e)}")
     
-    def process_image(self, input_path, black_tolerance, minimum_cluster_size, top, bottom, left, right):
-        """Process the image using a simpler, more reliable approach that ignores edge regions"""
+    def process_image(self, input_path, black_tolerance, minimum_cluster_size, edge_samples):
+        """Process the image using a scientific approach to detect black pixels and ignore edge regions"""
         # Step 1: Load the image
         raw_image = Image.open(input_path)
         raw_image = raw_image.convert("RGBA")
@@ -348,16 +348,42 @@ This approach preserves edges while accurately identifying and measuring porosit
         edge_width = self.edge_width.get()
         interior_mask = ndimage.binary_erosion(object_mask, iterations=edge_width)
         
-        # Step 5: Obtain the black color reference from the original image
-        black = obtainblack(raw_image)
-        maxblack = tuple(int(min(x * (1 + black_tolerance), 255)) for x in black)
-        minblack = tuple(int(max(x * (1 - black_tolerance), 0)) for x in black)
+        # Step 5: Scientifically determine the "black" reference value
+        # Sample pixels around the edge of the original image
+        edge_pixels = []
+        # Calculate sample spacing
+        spacing_x = max(1, width // int(edge_samples ** 0.5))
+        spacing_y = max(1, height // int(edge_samples ** 0.5))
         
-        # Step 6: Detect and remove holes in the interior region only
-        cleaned_image = no_bg_image.copy()
-        clusters = []
+        # Sample a grid of pixels near the edge
+        border_width = 10  # Sample within 10 pixels of the edge
+        for y in range(border_width, height - border_width, spacing_y):
+            for x in range(border_width, width - border_width, spacing_x):
+                # Only sample if the pixel is near the edge
+                if (x < border_width * 2 or x > width - border_width * 2 or
+                    y < border_width * 2 or y > height - border_width * 2):
+                    edge_pixels.append((x, y))
         
-        # Create a debug image showing the interior mask
+        # Now check which of these edge pixels were removed by rembg
+        black_candidates = []
+        for x, y in edge_pixels:
+            raw_pixel = raw_image.getpixel((x, y))
+            if raw_pixel[3] > 0:  # Not transparent in original
+                if no_bg_image.getpixel((x, y))[3] == 0:  # Transparent in rembg output
+                    # This was a background pixel - add it as a black candidate
+                    black_candidates.append(raw_pixel[:3])  # Just use RGB values
+        
+        # Calculate the average of the black candidates
+        if black_candidates:
+            avg_r = sum(p[0] for p in black_candidates) // len(black_candidates)
+            avg_g = sum(p[1] for p in black_candidates) // len(black_candidates)
+            avg_b = sum(p[2] for p in black_candidates) // len(black_candidates)
+            black = (avg_r, avg_g, avg_b)
+        else:
+            # Fallback to original method if no candidates found
+            black = obtainblack(raw_image)
+            
+        # Create debug image showing the interior mask (keep this one)
         debug_image = no_bg_image.copy()
         for y in range(height):
             for x in range(width):
@@ -367,6 +393,14 @@ This approach preserves edges while accurately identifying and measuring porosit
         
         debug_path = os.path.join(self.output_dir.get(), "debug_mask.png")
         debug_image.save(debug_path)
+        
+        # Step 6: Calculate black tolerance bounds
+        maxblack = tuple(int(min(x * (1 + black_tolerance), 255)) for x in black)
+        minblack = tuple(int(max(x * (1 - black_tolerance), 0)) for x in black)
+        
+        # Step 7: Detect and remove holes in the interior region only
+        cleaned_image = no_bg_image.copy()
+        clusters = []
         
         # Find hole candidates inside the interior mask
         potential_holes = []
@@ -428,7 +462,8 @@ This approach preserves edges while accurately identifying and measuring porosit
         stats = self.check_results(cleaned_image, clusters, normal_image_size, no_bg_size)
         
         return cleaned_image, all_hole_pixels, stats
-    
+
+
     def check_results(self, cleaned_image, clusters, normal_image_size, no_bg_size):
         """Calculate statistics from processed image"""
         # Convert cluster sizes to integers
