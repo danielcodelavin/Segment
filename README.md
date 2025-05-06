@@ -30,13 +30,14 @@ Additional dependencies of these packages will be installed automatically.
 
 1. It's recommended to create a virtual environment:
    ```
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   conda create -n segmenter python=3.10
+   conda activate segmenter
    ```
 
 2. Install the required packages:
    ```
    pip install pillow==10.3.0 numpy==1.26.4 scipy==1.14.1 rembg==2.0.59 opencv-python-headless==4.10.0.84
+   
    ```
 
 ## Usage
