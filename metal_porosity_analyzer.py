@@ -177,7 +177,7 @@ Porosity Analysis Workflow:
 
 1. Remove background with rembg
 2. Create a protected edge zone to avoid processing edge artifacts
-3. Scientifically determine the reference "black" color by:
+3. Determine the reference "black" color by:
    - Sampling a grid of pixels near the edges
    - Identifying which ones were removed by rembg (true background)
    - Computing the average color of these known background pixels
