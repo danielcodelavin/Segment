@@ -7,9 +7,9 @@ Clusters are the holes within the object itself.
 
 Normal Image Size: 409431
 Object Size (after bg removal): 307283
-Final Object Size (after hole removal): 294699
-Cluster Amount: 34
-Cluster Sizes: [59, 43, 112, 177, 50, 25, 907, 29, 99, 1573, 1387, 138, 36, 187, 1517, 449, 1748, 249, 868, 47, 326, 65, 1038, 74, 181, 53, 336, 29, 126, 63, 100, 405, 25, 63]
-Cluster Sum: 12584
-Average Cluster Size: 370.12
-Density: 95.90%
+Final Object Size (after hole removal): 294581
+Cluster Amount: 37
+Cluster Sizes: [91, 42, 61, 62, 106, 210, 49, 25, 896, 96, 1560, 1374, 138, 36, 185, 1506, 437, 1727, 247, 861, 45, 321, 63, 1032, 71, 178, 51, 332, 27, 133, 61, 97, 401, 25, 31, 90, 35]
+Cluster Sum: 12702
+Average Cluster Size: 343.30
+Density: 95.87%
