@@ -1,80 +1,100 @@
-# Metal Porosity Analyzer
+# Metal Sample Analysis Tools
 
-A Tkinter application for analyzing porosity in metal samples using image processing techniques.
+Welcome! This folder contains two different programs designed to help you clean up images of metal samples and analyze them. 
 
-## Description
+Since metal samples can look very different (some are solid blocks, others are scattered powder), we have two separate tools. Read **Section 1** below to decide which one you need.
 
-This application provides a user interface for detecting and analyzing pores (holes) in metal samples from images. It uses background removal and color-based clustering to identify porous regions, calculate porosity statistics, and generate reports.
+---
 
-Key features:
-- Background removal to isolate the metal sample
-- Edge protection to prevent false detections at boundaries
-- Black color detection for hole identification
-- Adjustable parameters for processing control
-- Visual overlay of detected pores
-- Detailed analysis report generation
+## 1. Which Tool Should I Use?
 
-## Requirements
+Look at your image and ask yourself: **"Is this one solid object with holes in it, or many scattered little pieces?"**
 
-```
-pillow==10.3.0
-numpy==1.26.4
-scipy==1.14.1
-rembg==2.0.59
-opencv-python-headless==4.10.0.84
-```
+### Option A: The "Swiss Cheese" Case
+**Use: `metal_porosity_analyzer.py`**
 
-Additional dependencies of these packages will be installed automatically.
+* **Best for:** A single, solid piece of metal that has "pores" (holes) inside it.
+* **What it does:** It finds the border of your metal object, cuts away the background, and then counts/measures the black holes inside the metal. It gives you a density report at the end.
 
-## Installation
+### Option B: The "Salt on a Table" Case
+**Use: `sparse_drops.py`**
 
-1. It's recommended to create a virtual environment:
-   ```
-   conda create -n segmenter python=3.10
-   conda activate segmenter
-   ```
+* **Best for:** Disjoint, scattered drops, powder, or particles that are not touching each other.
+* **What it does:** It aggressively removes the background between all the little scattered pieces. It does **not** give a density report because there is no single "object" to measure against.
 
-2. Install the required packages:
-   ```
-   pip install pillow==10.3.0 numpy==1.26.4 scipy==1.14.1 rembg==2.0.59 opencv-python-headless==4.10.0.84
-   
-   ```
+---
 
-## Usage
+## 2. Guide: Metal Porosity Analyzer (Option A)
+**File:** `metal_porosity_analyzer.py`
 
-1. Run the application:
-   ```
-   python metal_porosity_analyzer.py
-   ```
+Use this for solid shapes. When you open the window, you will see several sliders. Here is what they do:
 
-2. Use the interface to:
-   - Load an input image
-   - Set the output directory and filenames
-   - Adjust processing parameters
-   - Process the image
-   - View results and save the analysis
+* **Black Tolerance (0.1 - 1.0)**
+    * *What it does:* Decides what counts as a "hole."
+    * *Intuition:* Think of this as a strictness filter.
+    * *Example:* If set **High (0.9)**, dark grey spots are counted as holes. If set **Low (0.2)**, only pitch-black spots are counted. If your image is failing to pick up holes, turn this UP.
+* **Minimum Cluster Size**
+    * *What it does:* Decides how big a spot needs to be to matter.
+    * *Intuition:* A "Dust Filter."
+    * *Example:* If set to **25**, the program ignores tiny pixel specks (dust/noise) and only counts actual holes larger than 25 pixels.
+* **Edge Width**
+    * *What it does:* Creates a "Safety Zone" around the outer border of your metal object.
+    * *Intuition:* This stops the program from accidentally thinking the edge of your sample is a hole.
+    * *Example:* If your sample has a rough, dark edge and the program keeps trying to delete it, **increase** this number to tell the program: "Don't touch the outer 40 pixels."
+* **Show Hole Detection Overlay**
+    * *Check this box:* It paints the detected holes **green** on the screen so you can visually check if the settings are correct before saving.
 
-## Processing Parameters
+---
 
-- **Black Tolerance**: Determines how close a pixel must be to the detected "black" color to be considered a hole
-- **Minimum Cluster Size**: The minimum size a connected group of pixels must be to be counted as a hole
-- **Edge Width**: Width of the protected border zone where holes are not detected
-- **Edge Samples**: Number of points to sample when determining the reference black color
+## 3. Guide: Sparse Drops / Background Remover (Option B)
+**File:** `sparse_drops.py`
 
-## Output Files
+Use this for scattered particles.
 
-- Processed image with holes removed
-- Debug visualization showing the edge protection zone
-- Analysis report with porosity statistics
+* **Aggressiveness (10 - 100)**
+    * *What it does:* How hard the program tries to scrub away the background color.
+    * *Intuition:* Like the strength of an eraser.
+    * *Example:* If you still see faint shadows or "haze" around your particles, **increase** this number. If the particles themselves are disappearing, **decrease** it.
+* **Black Tolerance**
+    * *What it does:* Specifically targets pure black artifacts or dust.
+    * *Intuition:* A "Spot Cleaner" for dark specks.
+    * *Example:* Usually, you can leave this low (around 10). Increase it only if you have distinct black specks on the background that aren't part of the metal.
 
-## Analysis Report
+---
 
-The report includes:
-- Original image size (in pixels)
-- Object size after background removal
-- Final object size after hole removal
-- Number of holes detected
-- Size of each hole (in pixels)
-- Total area of all holes
-- Average hole size
-- Density (ratio of final to initial object size)
+## 4. How to Install and Run (Step-by-Step)
+
+If you have never run a Python script before, follow these exact steps.
+
+### Step 1: Install Python
+1.  Go to [python.org/downloads](https://www.python.org/downloads/).
+2.  Download the latest version for Windows.
+3.  **CRITICAL:** When the installer opens, check the box at the bottom that says **"Add Python to PATH"**. (If you miss this, the commands below won't work).
+4.  Click "Install Now".
+
+### Step 2: Install the "Helper" Libraries
+These scripts need specific math and image tools to work. You need to install them once.
+
+1.  Press the **Windows Key** on your keyboard, type `cmd`, and press Enter. A black window will appear.
+2.  Copy and paste the following line into that black window and press **Enter**:
+
+    ```text
+    pip install numpy scipy Pillow rembg
+    ```
+
+    *Wait for the text to stop scrolling and for it to say "Successfully installed..."*
+
+### Step 3: Run the Program
+1.  Make sure all your files (`sparse_drops.py`, `metal_porosity_analyzer.py`, and the helper files `naive.py` and `removebg.py`) are in the **same folder**.
+2.  Open that folder.
+3.  Click in the address bar at the top of the folder window (where it says `C:\Users\YourName\...`), type `cmd`, and press **Enter**.
+4.  To run the **Porosity Analyzer**, type this and press Enter:
+    ```text
+    python metal_porosity_analyzer.py
+    ```
+5.  To run the **Sparse Drops** tool, type this and press Enter:
+    ```text
+    python sparse_drops.py
+    ```
+
+The window should now pop up, and you are ready to work!
