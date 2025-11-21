@@ -75,26 +75,15 @@ If you have never run a Python script before, follow these exact steps.
 ### Step 2: Install the "Helper" Libraries
 These scripts need specific math and image tools to work. You need to install them once.
 
-1.  Press the **Windows Key** on your keyboard, type `cmd`, and press Enter. A black window will appear.
+1.  Open the terminal, either by searching for "cmd" on windows or by pressing on "Terminal" within VSCode
 2.  Copy and paste the following line into that black window and press **Enter**:
 
     ```text
     pip install numpy scipy Pillow rembg
     ```
 
-    *Wait for the text to stop scrolling and for it to say "Successfully installed..."*
-
+  
 ### Step 3: Run the Program
 1.  Make sure all your files (`sparse_drops.py`, `metal_porosity_analyzer.py`, and the helper files `naive.py` and `removebg.py`) are in the **same folder**.
 2.  Open that folder.
-3.  Click in the address bar at the top of the folder window (where it says `C:\Users\YourName\...`), type `cmd`, and press **Enter**.
-4.  To run the **Porosity Analyzer**, type this and press Enter:
-    ```text
-    python metal_porosity_analyzer.py
-    ```
-5.  To run the **Sparse Drops** tool, type this and press Enter:
-    ```text
-    python sparse_drops.py
-    ```
-
-The window should now pop up, and you are ready to work!
+3.  Either open the files via the terminal by running `python sparse_drops.py` or run them within VSCode directly
