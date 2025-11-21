@@ -15,13 +15,13 @@ Look at your image and ask yourself: **"Is this one solid object with holes in i
 
 * **Best for:** A single, solid piece of metal that has "pores" (holes) inside it.
 * **What it does:** It finds the border of your metal object, cuts away the background, and then counts/measures the black holes inside the metal. It gives you a density report at the end.
-
+![Swiss Cheese Example](processed_image.png)
 ### Option B: The "Salt on a Table" Case
 **Use: `sparse_drops.py`**
 
 * **Best for:** Disjoint, scattered drops, powder, or particles that are not touching each other.
 * **What it does:** It aggressively removes the background between all the little scattered pieces. It does **not** give a density report because there is no single "object" to measure against.
-
+![Salt on Table Example](example.png)
 ---
 
 ## 2. Guide: Metal Porosity Analyzer (Option A)
